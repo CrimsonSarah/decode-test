@@ -1,15 +1,8 @@
+import { UserService } from "../domain/user.service";
 import type { FastifyTypedInstance } from "../shared/types";
-import { randomUUID } from "node:crypto";
 import { z } from "zod";
 
-
-interface User {
-  id: string
-  name: string
-  enail: string
-}
-
-const users = []
+const userService = new UserService()
 
 function routes (fastify: FastifyTypedInstance, options: any, done: () => void) {
 
@@ -34,15 +27,17 @@ function routes (fastify: FastifyTypedInstance, options: any, done: () => void) 
       },
     },
     async (request, reply) => {
-      const { name, email } = request.body as { name: string; email: string };
+      userService.insert(request, reply);
+    });
 
-      users.push({
-        id: randomUUID(),
-        name,
-        email,
-      })
-
-      return reply.status(201).send({message: "Usuário criado com sucesso"});
+  fastify.get("/list", {
+      schema: {
+        tags: ["Users"],
+        description: 'Lista todos os usuários',
+      },
+    },
+    async (request, reply) => {
+      userService.insert(request, reply);
     });
 
   done();
