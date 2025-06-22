@@ -29,11 +29,8 @@ await app.register(fastifySwaggerUi, {
   routePrefix: '/docs',
 })
 
-await app.register(require('./interfaces/routes.ts'), { prefix: "/users" });
-
-app.get("/", async () => {
-  return "Hello, World!";
-});
+await app.register(require('./interfaces/users.ts'), { prefix: "/users" });
+await app.register(require('./interfaces/tasks.ts'), { prefix: "/tasks" });
 
 const start = async () => {
   try {
