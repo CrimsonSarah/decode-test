@@ -54,7 +54,7 @@ export class UserService {
     async delete(req:any, reply:any) {
         const { id } = req.params as { id: string };
 
-        const userCreated = await this.prisma.user.findUnique({
+        const userExists = await this.prisma.user.findUnique({
             where: {  id: Number(id) }
         }).catch((error) => {
             console.error("Erro ao buscar usuário:", error);

@@ -18,6 +18,26 @@ function routes (fastify: FastifyTypedInstance, options: any, done: () => void) 
     await taskService.list(reply);
   });
 
+  fastify.get("/search/byUser/:userId", {
+    schema: {
+      tags: ["Tasks"],
+      description: 'Lista todas as tarefas associadas a um usuário',
+    },
+  },
+  async (request, reply) => {
+    await taskService.searchByUser(reply);
+  });
+
+  fastify.get("/search/byStatus/:status", {
+    schema: {
+      tags: ["Tasks"],
+      description: 'Lista todas as tarefas cujo status é igual ao parâmetro passado',
+    },
+  },
+  async (request, reply) => {
+    await taskService.searchByStatus(reply);
+  });
+
   fastify.post("/", {
       schema: {
         tags: ["Tasks"],
@@ -46,6 +66,16 @@ function routes (fastify: FastifyTypedInstance, options: any, done: () => void) 
     },
     async (request, reply) => {
       await taskService.update(request, reply);
+    });
+
+  fastify.post("/complete/:id", {
+      schema: {
+        tags: ["Tasks"],
+        description: 'Marca uma tarefa como concluída',
+      },
+    },
+    async (request, reply) => {
+      await taskService.complete(request, reply);
     });
 
     fastify.post("/delete/:id", {
