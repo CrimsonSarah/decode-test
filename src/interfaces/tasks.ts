@@ -1,64 +1,62 @@
+import { id } from "zod/v4/locales";
 import { TaskService } from "../domain/task.service";
 import type { FastifyTypedInstance } from "../shared/types";
 import { z } from "zod";
+import { stat } from "fs";
 
 const taskService = new TaskService()
 
 function routes (fastify: FastifyTypedInstance, options: any, done: () => void) {
 
-  fastify.post("/", {
-        schema: {
-          tags: ["Tasks"],
-          description: 'Cria uma nova tarefa',
-          body: z.object({
-            description: z.string().min(1, "É necessário informar a descrição"),
-            user: z.string().min(1, "É necessário informar o usuário"),
-            status: z.string().min(1, "É necessário informar o status"),
-          }),
-        },
-      },
-      async (request, reply) => {
-        taskService.insert(request, reply);
-      });
-  
-    fastify.get("/", {
-        schema: {
-          tags: ["Tasks"],
-          description: 'Lista todas as tarefas',
-        },
-      },
-      async (request, reply) => {
-        taskService.list(reply);
-      });
+  fastify.get("/", {
+    schema: {
+      tags: ["Tasks"],
+      description: 'Lista todas as tarefas',
+    },
+  },
+  async (request, reply) => {
+    await taskService.list(reply);
+  });
 
-      fastify.post("/update", {
-            schema: {
-              tags: ["Tasks"],
-              description: 'Atualiza uma tarefa',
-              body: z.object({
-                id: z.string().uuid("ID inválido"),
-                description: z.string().min(1, "É necessário informar a descrição"),
-                user: z.string().min(1, "É necessário informar o usuário"),
-                status: z.string().min(1, "É necessário informar o status"),
-              }),
-            },
-          },
-          async (request, reply) => {
-            taskService.insert(request, reply);
-          });
-      
-          fastify.post("/delete", {
-            schema: {
-              tags: ["Tasks"],
-              description: 'Remove uma tarefa',
-              body: z.object({
-                id: z.string().uuid("ID inválido")
-              }),
-            },
-          },
-          async (request, reply) => {
-            taskService.insert(request, reply);
-          });
+  fastify.post("/", {
+      schema: {
+        tags: ["Tasks"],
+        description: 'Cria uma nova tarefa',
+        body: z.object({
+          userId: z.number().int().positive("O ID do usuário deve ser um número inteiro positivo"),
+          description: z.string().min(1, "É necessário informar a descrição da tarefa"),
+          status: z.string().min(1, "É necessário informar o status da tarefa"),
+        }),
+      },
+    },
+    async (request, reply) => {
+      await taskService.insert(request, reply);
+    });
+
+  fastify.post("/update/:id", {
+      schema: {
+        tags: ["Tasks"],
+        description: 'Atualiza uma tarefa',
+        body: z.object({
+          userId: z.number().int().positive("O ID do usuário deve ser um número inteiro positivo"),
+          description: z.string().min(1, "É necessário informar a descrição da tarefa"),
+          status: z.string().min(1, "É necessário informar o status da tarefa"),
+        }),
+      },
+    },
+    async (request, reply) => {
+      await taskService.update(request, reply);
+    });
+
+    fastify.post("/delete/:id", {
+      schema: {
+        tags: ["Tasks"],
+        description: 'Remove uma tarefa',
+      },
+    },
+    async (request, reply) => {
+      await taskService.delete(request, reply);
+    });
 
   done();
 }

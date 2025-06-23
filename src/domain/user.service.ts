@@ -1,49 +1,70 @@
-import { randomUUID } from "node:crypto";
+import { PrismaClient } from "../generated/prisma";
 
 export class UserService {
-    private users: { id: string; name: string; email: string }[] = [];
+    private prisma: PrismaClient;
     
     constructor() {
+        this.prisma = new PrismaClient();
     }
 
-    insert(req:any, reply:any) {
+    async insert(req:any, reply:any) {
         const { name, email } = req.body as { name: string; email: string };
-
-        this.users.push({
-            id: randomUUID(),
-            name,
-            email,
+        const user = await this.prisma.user.create({
+            data: {
+                name,
+                email,
+            }
+        }).catch((error) => {
+            console.error("Erro ao inserir usuário:", error);
         })
 
-        return reply.status(201).send({message: "Usuário criado com sucesso"});
+        return reply.status(201).send({message: "Usuário criado com sucesso", user});
     }
 
-    update(req:any, reply:any) {
+    async update(req:any, reply:any) {
         const { id } = req.params as { id: string };
         const { name, email } = req.body as { name: string; email: string };
 
-        const userIndex = this.users.findIndex(user => user.id === id);
-        if (userIndex === -1) {
-            return reply.status(404).send({ message: "Usuário não encontrado" });
-        }
+        const userExists = await this.prisma.user.findUnique({
+            where: {  id: Number(id) }
+        }).catch((error) => {
+            console.error("Erro ao buscar usuário:", error);
+        });
 
-        this.users[userIndex] = { id, name, email };
-        return reply.status(200).send({ message: "Usuário atualizado com sucesso" });
+        const user = await this.prisma.user.update({
+            data:{
+                name,
+                email,
+            },
+            where: {
+                id: Number(id),
+            }
+        })
+
+        return reply.status(200).send({ message: "Usuário atualizado com sucesso", user});
     }
 
-    list(reply:any) {
-        return reply.status(200).send(this.users, this.users.length);
+    async list(reply:any) {
+        const users = await this.prisma.user.findMany().catch((error) => {
+            console.error("Erro ao listar usuários:", error);
+        });
+        return reply.status(200).send(users);
     }
 
-    delete(req:any, reply:any) {
+    async delete(req:any, reply:any) {
         const { id } = req.params as { id: string };
 
-        const userIndex = this.users.findIndex(user => user.id === id);
-        if (userIndex === -1) {
-            return reply.status(404).send({ message: "Usuário não encontrado" });
-        }
+        const userCreated = await this.prisma.user.findUnique({
+            where: {  id: Number(id) }
+        }).catch((error) => {
+            console.error("Erro ao buscar usuário:", error);
+        });
 
-        this.users.splice(userIndex, 1);
+        const user = await this.prisma.user.delete({
+            where: { id: Number(id) }
+            }).catch((error) => {
+                console.error("Erro ao deletar usuário:", error);})
+
         return reply.status(200).send({ message: "Usuário deletado com sucesso" });
     }
 }

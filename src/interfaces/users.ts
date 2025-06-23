@@ -14,7 +14,7 @@ function routes (fastify: FastifyTypedInstance, options: any, done: () => void) 
     },
   },
   async (request, reply) => {
-    userService.list(reply);
+    await userService.list(reply);
   });
 
   fastify.post("/", {
@@ -28,35 +28,31 @@ function routes (fastify: FastifyTypedInstance, options: any, done: () => void) 
       },
     },
     async (request, reply) => {
-      userService.insert(request, reply);
+      await userService.insert(request, reply);
     });
 
-  fastify.post("/update", {
+  fastify.post("/update/:id", {
       schema: {
         tags: ["Users"],
         description: 'Atualiza um usuário',
         body: z.object({
-          id: z.string().uuid("ID inválido"),
           name: z.string().min(1, "É necessário informar o nome"),
           email: z.string().email(),
         }),
       },
     },
     async (request, reply) => {
-      userService.insert(request, reply);
+      await userService.update(request, reply);
     });
 
-    fastify.post("/delete", {
+    fastify.post("/delete/:id", {
       schema: {
         tags: ["Users"],
         description: 'Remove um usuário',
-        body: z.object({
-          id: z.string().uuid("ID inválido")
-        }),
       },
     },
     async (request, reply) => {
-      userService.insert(request, reply);
+      await userService.delete(request, reply);
     });
 
   done();
